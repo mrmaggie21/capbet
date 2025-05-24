@@ -1,0 +1,56 @@
+/* Ícones do CAPBET */
+.icon-capbet {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.icon-capbet-sm {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-capbet-lg {
+    width: 48px;
+    height: 48px;
+}
+
+/* Ícones específicos */
+.icon-capbet-logo {    background-image: url('../img/logo.jpg');
+}
+
+.icon-capbet-favicon {
+    background-image: url('../img/favicon.png');
+}
+
+/* Ícones para PWA */
+.icon-capbet-192 {
+    background-image: url('../img/icon-192x192.png');
+}
+
+.icon-capbet-512 {
+    background-image: url('../img/icon-512x512.png');
+}
+
+/* Estados dos ícones */
+.icon-capbet-active {
+    filter: brightness(1.2);
+}
+
+.icon-capbet-disabled {
+    opacity: 0.5;
+}
+
+/* Animações */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.icon-capbet-pulse {
+    animation: pulse 2s infinite;
+} 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard de Arbitragem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/icons.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192x192.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        .navbar-brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Navbar com menu responsivo -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="/img/logo.jpg" alt="CAPBET Logo" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto">
+                    <button class="btn btn-outline-primary me-2 mb-2 mb-lg-0" onclick="showBotConfig()">
+                        <i class="fas fa-cog"></i>
+                        <span class="d-none d-sm-inline">Configurar Bot</span>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="d-none d-sm-inline">Sair</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1">
+        <div class="container py-4">
+            <!-- Jogos do Brasileirão -->
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card" id="brazilianGamesCard">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-futbol me-2"></i>
+                                Jogos do Brasileirão
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary" id="gamesCount">0 jogos</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="brazilianGamesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Mandante</th>
+                                            <th>Visitante</th>
+                                            <th>Placar</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oportunidades de Arbitragem -->
+                <div class="col-12">
+                    <div class="card" id="arbitrageCard">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Oportunidades de Arbitragem
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success" id="opportunitiesCount">0 oportunidades</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="arbitrageTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Jogo</th>
+                                            <th>Odd Casa</th>
+                                            <th>Odd Fora</th>
+                                            <th>Odd Empate</th>
+                                            <th>Lucro</th>
+                                            <th>Detalhes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Configuração do Bot -->
+    <div class="modal fade" id="botConfigModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cog me-2"></i>
+                        Configurações do Bot
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="botConfigForm" class="needs-validation" novalidate>
+                        <!-- Abas para organizar as configurações -->
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                                    <i class="fas fa-sliders-h"></i>
+                                    <span class="d-none d-sm-inline">Geral</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bookmakers" type="button">
+                                    <i class="fas fa-building"></i>
+                                    <span class="d-none d-sm-inline">Casas</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notifications" type="button">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="d-none d-sm-inline">Notificações</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#filters" type="button">
+                                    <i class="fas fa-filter"></i>
+                                    <span class="d-none d-sm-inline">Filtros</span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- Configurações Gerais -->
+                            <div class="tab-pane fade show active" id="general">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Configurações Gerais</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Intervalo de Atualização (ms)</label>
+                                                    <input type="number" class="form-control" name="updateInterval" min="5000">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Lucro Mínimo (%)</label>
+                                                    <input type="number" class="form-control" name="minProfitPercentage" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Configurações de Apostas -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Configurações de Apostas</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Valor Base (R$)</label>
+                                                    <input type="number" class="form-control" name="baseStake">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Máximo por Aposta (R$)</label>
+                                                    <input type="number" class="form-control" name="maxStakePerBet">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Máximo Total (R$)</label>
+                                                    <input type="number" class="form-control" name="maxTotalStake">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tipos de Arbitragem -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Tipos de Arbitragem</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.standard" id="standardArbitrage">
+                                                    <label class="form-check-label" for="standardArbitrage">
+                                                        Arbitragem Padrão
+                                                        <small class="d-block text-muted">Apostas pré-jogo com odds fixas</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.live" id="liveArbitrage">
+                                                    <label class="form-check-label" for="liveArbitrage">
+                                                        Arbitragem ao Vivo
+                                                        <small class="d-block text-muted">Apostas durante o jogo</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.asian" id="asianArbitrage">
+                                                    <label class="form-check-label" for="asianArbitrage">
+                                                        Arbitragem Asiática
+                                                        <small class="d-block text-muted">Handicap asiático e linhas</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Casas de Apostas -->
+                            <div class="tab-pane fade" id="bookmakers">
+                                <div id="bookmakersContainer" class="row g-3">
+                                    <!-- Preenchido dinamicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Notificações -->
+                            <div class="tab-pane fade" id="notifications">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Notificações</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="notifications.email" id="emailNotification">
+                                                    <label class="form-check-label">Email</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="notifications.telegram" id="telegramNotification">
+                                                    <label class="form-check-label">Telegram</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="notifications.desktop">
+                                                    <label class="form-check-label">Desktop</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Configurações de Email -->
+                                        <div id="emailConfig" class="d-none">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Email Para</label>
+                                                        <input type="email" class="form-control" name="notifications.emailConfig.to">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Email De</label>
+                                                        <input type="email" class="form-control" name="notifications.emailConfig.from">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Configurações do Telegram -->
+                                        <div id="telegramConfig" class="d-none">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Token do Bot</label>
+                                                        <input type="text" class="form-control" name="notifications.telegramConfig.botToken">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Chat ID</label>
+                                                        <input type="text" class="form-control" name="notifications.telegramConfig.chatId">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filtros -->
+                            <div class="tab-pane fade" id="filters">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Limites de Odds</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Odd Mínima</label>
+                                                    <input type="number" class="form-control" name="oddsLimits.min" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Odd Máxima</label>
+                                                    <input type="number" class="form-control" name="oddsLimits.max" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Esportes -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Esportes</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="sports.soccer">
+                                                    <label class="form-check-label">Futebol</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="sports.basketball">
+                                                    <label class="form-check-label">Basquete</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="sports.tennis">
+                                                    <label class="form-check-label">Tênis</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="sports.volleyball">
+                                                    <label class="form-check-label">Vôlei</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ligas -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Ligas/Competições</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_brazil_campeonato">
+                                                    <label class="form-check-label">Brasileirão Série A</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_brazil_serie_b">
+                                                    <label class="form-check-label">Brasileirão Série B</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_libertadores">
+                                                    <label class="form-check-label">Libertadores</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_copa_brasil">
+                                                    <label class="form-check-label">Copa do Brasil</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        <span class="d-none d-sm-inline">Cancelar</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveBotConfig()">
+                        <i class="fas fa-save"></i>
+                        <span class="d-none d-sm-inline">Salvar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none">
+        <div class="d-flex justify-content-center align-items-center h-100 bg-white bg-opacity-75">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html> 

@@ -1,0 +1,35 @@
+{
+  "updateInterval": 30000,
+  "minProfitPercentage": 2,
+  "baseStake": 100,
+  "maxStakePerBet": 1000,
+  "maxTotalStake": 5000,
+  "arbitrageTypes": {
+    "standard": true,
+    "live": true
+  },
+  "bookmakers": {
+    "bet365": true,
+    "betfair": true,
+    "pinnacle": true,
+    "williamhill": true
+  },
+  "notifications": {
+    "telegram": true,
+    "emailConfig": 0,
+    "telegramConfig": -1001320233946
+  },
+  "oddsLimits": {
+    "min": 1.1,
+    "max": 10
+  },
+  "sports": {
+    "soccer": true
+  },
+  "leagues": {
+    "soccer_brazil_campeonato": true,
+    "soccer_brazil_serie_b": true,
+    "soccer_libertadores": true,
+    "soccer_copa_brasil": true
+  }
+}
