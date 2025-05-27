@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -15,18 +15,805 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
+        :root {
+            /* Cores da Betfair */
+            --betfair-yellow: #ffd204;
+            --betfair-dark: #282828;
+            --betfair-darker: #1e1e1e;
+            --betfair-black: #000000;
+            --betfair-text: #e8e8e8;
+            --betfair-text-muted: #999999;
+            --betfair-border: #383838;
+            --betfair-success: #1aab54;
+            --betfair-danger: #e31c1c;
+            --betfair-warning: #ffd204;
+            --betfair-info: #2196f3;
+
+            /* Variáveis Bootstrap */
+            --bs-primary: var(--betfair-yellow);
+            --bs-primary-rgb: 255, 210, 4;
+            --bs-body-bg: var(--betfair-black);
+            --bs-body-color: var(--betfair-text);
+            --bs-dark: var(--betfair-dark);
+            --bs-darker: var(--betfair-darker);
+            --bs-border-color: var(--betfair-border);
+            --bs-success: var(--betfair-success);
+            --bs-danger: var(--betfair-danger);
+            --bs-warning: var(--betfair-warning);
+            --bs-info: var(--betfair-info);
+            --bs-card-bg: var(--betfair-dark);
+            --bs-card-cap-bg: var(--betfair-darker);
+            --bs-modal-bg: var(--betfair-dark);
+            --bs-input-bg: var(--betfair-darker);
+            --bs-input-color: var(--betfair-text);
+            --bs-input-border-color: var(--betfair-border);
+        }
+
+        /* Mobile First Base Styles */
+        html, body {
+            font-size: 14px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--betfair-text);
+            background-color: var(--betfair-black);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Container ajustado para mobile */
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            max-width: 100%;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--betfair-dark);
+            border: 1px solid var(--betfair-border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: var(--betfair-darker);
+            border-bottom: 1px solid var(--betfair-border);
+            padding: 0.75rem;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--betfair-yellow);
+        }
+
+        /* Tabelas Responsivas */
+        .table-responsive {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 0;
+            color: var(--betfair-text);
+            font-size: 0.875rem;
+        }
+
+        .table th {
+            background: var(--betfair-darker);
+            color: var(--betfair-yellow);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-color: var(--betfair-border);
+        }
+
+        /* Transformar tabela em cards para mobile */
+        @media (max-width: 768px) {
+            .table:not(.table-fixed) {
+                border: 0;
+            }
+
+            .table:not(.table-fixed) thead {
+                display: none;
+            }
+
+            .table:not(.table-fixed) tr {
+                display: block;
+                margin-bottom: 0.625rem;
+                border: 1px solid var(--betfair-border);
+                border-radius: 4px;
+                background: var(--betfair-dark);
+            }
+
+            .table:not(.table-fixed) td {
+                display: block;
+                text-align: right;
+                padding: 0.5rem;
+                position: relative;
+                border-bottom: 1px solid var(--betfair-border);
+            }
+
+            .table:not(.table-fixed) td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 600;
+                color: var(--betfair-yellow);
+            }
+
+            .table:not(.table-fixed) td:last-child {
+                border-bottom: 0;
+            }
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn-primary {
+            background: var(--betfair-yellow);
+            border-color: var(--betfair-yellow);
+            color: var(--betfair-black);
+        }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background: #e6bd00;
+            border-color: #e6bd00;
+            color: var(--betfair-black);
+        }
+
+        /* Navbar Mobile */
+        .navbar {
+            background-color: var(--betfair-darker) !important;
+            border-bottom: 1px solid var(--betfair-border);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         .navbar-brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--betfair-yellow);
+        }
+
+        .navbar-toggler {
+            border-color: var(--betfair-border);
+            padding: 0.5rem;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+            border-color: var(--betfair-yellow);
+        }
+
+        /* Modal Mobile */
+        .modal-content {
+            background: var(--betfair-dark);
+            border: 1px solid var(--betfair-border);
+            border-radius: 8px;
+            margin: 0.5rem;
+        }
+
+        .modal-header {
+            background: var(--betfair-darker);
+            border-bottom: 1px solid var(--betfair-border);
+            padding: 0.75rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            background: var(--betfair-darker);
+            border-top: 1px solid var(--betfair-border);
+            padding: 0.75rem;
+        }
+
+        .modal-title {
+            color: var(--betfair-yellow);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Grid de Odds */
+        .odds-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+        }
+
+        .odds-item {
+            background: var(--betfair-darker);
+            border: 1px solid var(--betfair-border);
+            border-radius: 6px;
+            padding: 0.75rem;
+        }
+
+        /* Valores e Status */
+        .odds-value {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--betfair-yellow);
+        }
+
+        .profit-positive {
+            color: var(--betfair-success);
+            font-weight: 500;
+        }
+
+        .profit-negative {
+            color: var(--betfair-danger);
+            font-weight: 500;
+        }
+
+        /* Badges e Indicadores */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+
+        .badge.bg-success {
+            background-color: var(--betfair-success) !important;
+            color: #fff;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--betfair-danger) !important;
+            color: #fff;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--betfair-warning) !important;
+            color: var(--betfair-black);
+        }
+
+        /* Forms */
+        .form-control {
+            background-color: var(--betfair-darker);
+            border: 1px solid var(--betfair-border);
+            color: var(--betfair-text);
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        .form-control:focus {
+            background-color: var(--betfair-darker);
+            border-color: var(--betfair-yellow);
+            color: var(--betfair-text);
+            box-shadow: 0 0 0 0.2rem rgba(255, 210, 4, 0.25);
+        }
+
+        /* Textos e Links */
+        .text-muted {
+            color: var(--betfair-text-muted) !important;
+        }
+
+        a {
+            color: var(--betfair-yellow);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #e6bd00;
+            text-decoration: none;
+        }
+
+        /* Alerts */
+        .alert {
+            background: var(--betfair-darker);
+            border: 1px solid var(--betfair-border);
+            color: var(--betfair-text);
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            border-color: var(--betfair-success);
+        }
+
+        .alert-danger {
+            border-color: var(--betfair-danger);
+        }
+
+        .alert-warning {
+            border-color: var(--betfair-warning);
+        }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            background-color: rgba(0, 0, 0, 0.9) !important;
+        }
+
+        #loadingOverlay .spinner-border {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--betfair-yellow);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--betfair-darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--betfair-border);
+            border-radius: 3px;
+        }
+
+        /* Desktop Breakpoints */
+        @media (min-width: 769px) {
+            html, body {
+                font-size: 16px;
+            }
+
+            .container {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+
+            .card-header {
+                padding: 1rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .odds-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.25rem;
+            }
+
+            .modal-content {
+                margin: 1.5rem auto;
+            }
+        }
+
+        /* Fix para inputs em iOS */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"] {
+            -webkit-appearance: none;
+            border-radius: 4px;
+        }
+
+        /* Fix para botões em iOS */
+        button {
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Estilos para os cards de jogos */
+        .team-logo {
             width: 40px;
             height: 40px;
+            object-fit: contain;
             border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--betfair-darker);
+            padding: 4px;
+            border: 1px solid var(--betfair-border);
+            transition: transform 0.2s ease;
+        }
+
+        .arbitrage-card:hover .team-logo {
+            transform: scale(1.1);
+        }
+
+        .arbitrage-card .score {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--betfair-yellow);
+            padding: 0.5rem 1rem;
+            background: var(--betfair-darker);
+            border-radius: 8px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .arbitrage-card .team-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            display: block;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        @media (max-width: 768px) {
+            .arbitrage-card .team-name {
+                font-size: 0.8rem;
+                max-width: 80px;
+            }
+        }
+
+        /* Estilos para os cards de navegação */
+        .navigation-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--betfair-border);
+            background: var(--betfair-dark);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .navigation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--betfair-yellow);
+        }
+
+        .navigation-card .card-body {
+            padding: 1.5rem 1.25rem;
+            border-radius: 16px;
+        }
+
+        .navigation-card .fa-3x {
+            transition: all 0.3s ease;
+            color: var(--betfair-yellow);
+            margin-bottom: 1.25rem;
+            font-size: 2.8em;
+        }
+
+        .navigation-card:hover .fa-3x {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .navigation-card .card-title {
+            color: var(--betfair-yellow);
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .navigation-card .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            color: var(--betfair-text-muted);
+        }
+
+        .navigation-card .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Efeito de loading */
+        .navigation-card.loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            z-index: 1;
+        }
+
+        .navigation-card.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--betfair-dark);
+            border-top: 3px solid var(--betfair-yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Ajustes responsivos */
+        @media (max-width: 768px) {
+            .navigation-card {
+                margin-bottom: 1rem;
+            }
+
+            .navigation-card .card-body {
+                padding: 1.25rem 1rem;
+            }
+
+            .navigation-card .fa-3x {
+                font-size: 2.5em;
+                margin-bottom: 1rem;
+            }
+
+            .navigation-card .card-title {
+                font-size: 1.1rem;
+            }
+
+            .navigation-card .badge {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        /* Ajustes da Navbar */
+        .navbar-collapse {
+            padding: 1rem 0;
+            border-top: 1px solid var(--betfair-border);
+            margin-top: 0.75rem;
+        }
+
+        .navbar-nav {
+            width: 100%;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .navbar .btn {
+            padding: 0.75rem;
+            justify-content: flex-start;
+        }
+
+        .navbar .btn i {
+            width: 20px;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+
+        /* Ajustes para desktop */
+        @media (min-width: 992px) {
+            .navbar-nav {
+                align-items: center;
+            }
+
+            .nav-item {
+                margin-left: 0.5rem;
+            }
+        }
+
+        /* Estilos para os cards de arbitragem */
+        .arbitrage-card {
+            background: var(--betfair-dark);
+            border: 1px solid var(--betfair-border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arbitrage-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--betfair-yellow);
+        }
+
+        .arbitrage-header {
+            background: var(--betfair-darker);
+            padding: 1rem;
+            border-radius: 16px 16px 0 0;
+            position: relative;
+        }
+
+        .arbitrage-body {
+            padding: 1rem;
+            flex-grow: 1;
+        }
+
+        .arbitrage-footer {
+            padding: 1rem;
+            background: var(--betfair-darker);
+            border-radius: 0 0 16px 16px;
+            border-top: 1px solid var(--betfair-border);
+        }
+
+        /* Estilos para os detalhes da arbitragem */
+        .arbitrage-details {
+            background: transparent;
+            border-radius: 8px;
+        }
+
+        .detail-item {
+            background: var(--betfair-darker);
+            padding: 1rem;
+            border-radius: 8px;
+            height: 100%;
+            border: 1px solid var(--betfair-border);
+            transition: all 0.2s ease;
+        }
+
+        .detail-item:hover {
+            border-color: var(--betfair-yellow);
+            transform: translateY(-2px);
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--betfair-text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--betfair-text);
+        }
+
+        .detail-value.text-success {
+            color: var(--betfair-success) !important;
+        }
+
+        /* Ajustes para os itens de odds */
+        .odds-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .odd-item {
+            background: var(--betfair-darker);
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .odd-item:hover {
+            background: var(--betfair-dark);
+            transform: translateX(5px);
+        }
+
+        .odd-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--betfair-yellow);
+            margin-bottom: 0.25rem;
+        }
+
+        .odd-bookmaker {
+            font-size: 0.85rem;
+            color: var(--betfair-text-muted);
+        }
+
+        /* Novos estilos para stake e retorno */
+        .stake-info {
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        .stake-info small {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--betfair-text);
+        }
+
+        .return-info {
+            margin-top: 0.25rem;
+        }
+
+        .return-info small {
+            font-weight: 500;
+        }
+
+        /* Badges e indicadores */
+        .profit-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .market-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            margin-top: 0.5rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .arbitrage-card {
+                margin-bottom: 1rem;
+            }
+
+            .detail-item {
+                padding: 0.75rem;
+            }
+
+            .detail-label {
+                font-size: 0.75rem;
+            }
+
+            .detail-value {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
-<body class="bg-white">
+<body class="bg-dark">
     <!-- Navbar com menu responsivo -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="/img/logo.jpg" alt="CAPBET Logo" class="d-inline-block align-text-top">
@@ -35,386 +822,385 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="ms-auto">
-                    <button class="btn btn-outline-primary me-2 mb-2 mb-lg-0" onclick="showBotConfig()">
-                        <i class="fas fa-cog"></i>
-                        <span class="d-none d-sm-inline">Configurar Bot</span>
-                    </button>
-                    <button class="btn btn-outline-danger" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span class="d-none d-sm-inline">Sair</span>
-                    </button>
-                </div>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-outline-danger w-100" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sair</span>
+                        </button>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
     <main class="flex-grow-1">
         <div class="container py-4">
-            <!-- Jogos do Brasileirão -->
-            <div class="row g-3">
-                <div class="col-12">
-                    <div class="card" id="brazilianGamesCard">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-futbol me-2"></i>
-                                Jogos do Brasileirão
-                            </h5>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-primary" id="gamesCount">0 jogos</span>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0" id="brazilianGamesTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Mandante</th>
-                                            <th>Visitante</th>
-                                            <th>Placar</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
+            <!-- Cards de Navegação -->
+            <div id="navigationCards" class="row g-3">
+                <div class="col-md-3">
+                    <div class="card h-100 navigation-card" onclick="showGamesSection('serieA')">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-futbol fa-3x mb-3 text-primary"></i>
+                            <h3 class="card-title">Série A</h3>
+                            <p class="card-text text-muted">Jogos do Brasileirão Série A</p>
+                            <span class="badge bg-primary" id="serieACount">0 jogos</span>
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <div class="card h-100 navigation-card" onclick="showGamesSection('serieB')">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-futbol fa-3x mb-3 text-warning"></i>
+                            <h3 class="card-title">Série B</h3>
+                            <p class="card-text text-muted">Jogos do Brasileirão Série B</p>
+                            <span class="badge bg-warning" id="serieBCount">0 jogos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 navigation-card" onclick="showArbitrageSection()">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
+                            <h3 class="card-title">Arbitragem</h3>
+                            <p class="card-text text-muted">Veja todas as oportunidades</p>
+                            <span class="badge bg-success" id="opportunitiesCount">0 oportunidades</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 navigation-card" onclick="showBotConfig()">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-cog fa-3x mb-3 text-info"></i>
+                            <h3 class="card-title">Configurações</h3>
+                            <p class="card-text text-muted">Ajuste as configurações do bot</p>
+                            <span class="badge bg-info">
+                                <i class="fas fa-sliders-h me-1"></i>
+                                Personalizar
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <!-- Oportunidades de Arbitragem -->
-                <div class="col-12">
-                    <div class="card" id="arbitrageCard">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-chart-line me-2"></i>
-                                Oportunidades de Arbitragem
-                            </h5>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-success" id="opportunitiesCount">0 oportunidades</span>
-                            </div>
+            <!-- Seção de Jogos Série A (inicialmente oculta) -->
+            <div id="serieASection" class="mt-4 d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-futbol me-2"></i>
+                        Jogos do Brasileirão - Série A
+                    </h4>
+                    <button class="btn btn-outline-primary btn-sm" onclick="showNavigationCards()">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar
+                    </button>
+                </div>
+                <div class="row g-3" id="serieAGamesContainer">
+                    <!-- Cards dos jogos serão inseridos aqui dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Seção de Jogos Série B (inicialmente oculta) -->
+            <div id="serieBSection" class="mt-4 d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-futbol me-2"></i>
+                        Jogos do Brasileirão - Série B
+                    </h4>
+                    <button class="btn btn-outline-warning btn-sm" onclick="showNavigationCards()">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar
+                    </button>
+                </div>
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="serieBTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mandante</th>
+                                        <th>Visitante</th>
+                                        <th>Placar</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0" id="arbitrageTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Jogo</th>
-                                            <th>Odd Casa</th>
-                                            <th>Odd Fora</th>
-                                            <th>Odd Empate</th>
-                                            <th>Lucro</th>
-                                            <th>Detalhes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Oportunidades de Arbitragem -->
+            <div id="arbitrageSection" class="mt-4 d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Oportunidades de Arbitragem
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="showNavigationCards()">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Voltar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Container de Cards de Arbitragem -->
+                <div class="arbitrage-cards-container">
+                    <div class="row g-3" id="arbitrageTableBody">
+                        <!-- Cards serão inseridos aqui dinamicamente -->
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Configuração do Bot -->
+    <!-- Modal de Configurações -->
     <div class="modal fade" id="botConfigModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-cog me-2"></i>
                         Configurações do Bot
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="botConfigForm" class="needs-validation" novalidate>
-                        <!-- Abas para organizar as configurações -->
-                        <ul class="nav nav-tabs mb-3" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button">
-                                    <i class="fas fa-sliders-h"></i>
-                                    <span class="d-none d-sm-inline">Geral</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bookmakers" type="button">
-                                    <i class="fas fa-building"></i>
-                                    <span class="d-none d-sm-inline">Casas</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notifications" type="button">
-                                    <i class="fas fa-bell"></i>
-                                    <span class="d-none d-sm-inline">Notificações</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#filters" type="button">
-                                    <i class="fas fa-filter"></i>
-                                    <span class="d-none d-sm-inline">Filtros</span>
-                                </button>
-                            </li>
-                        </ul>
-
-                        <div class="tab-content">
-                            <!-- Configurações Gerais -->
-                            <div class="tab-pane fade show active" id="general">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Configurações Gerais</h6>
+                    <form id="botConfigForm">
+                        <!-- Configurações Gerais -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Configurações Gerais</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Intervalo de Atualização (ms)</label>
+                                            <input type="number" class="form-control" name="updateInterval" min="5000" value="30000">
+                                        </div>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Lucro Mínimo (%)</label>
+                                            <input type="number" class="form-control" name="minProfitPercentage" step="0.01" value="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configurações de Apostas -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Configurações de Apostas</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stake Base (R$)</label>
+                                            <input type="number" class="form-control" name="baseStake" step="0.01" value="100">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stake Máxima por Aposta (R$)</label>
+                                            <input type="number" class="form-control" name="maxStakePerBet" step="0.01" value="1000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stake Total Máxima (R$)</label>
+                                            <input type="number" class="form-control" name="maxTotalStake" step="0.01" value="3000">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipos de Arbitragem -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Tipos de Arbitragem</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" name="arbitrageTypes.standard" checked>
+                                            <label class="form-check-label">Arbitragem Padrão</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" name="arbitrageTypes.live">
+                                            <label class="form-check-label">Arbitragem ao Vivo</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" name="arbitrageTypes.asian">
+                                            <label class="form-check-label">Arbitragem Asiática</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notificações -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Notificações</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="emailNotification" name="notifications.email">
+                                            <label class="form-check-label">Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="telegramNotification" name="notifications.telegram">
+                                            <label class="form-check-label">Telegram</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="desktopNotification" name="notifications.desktop">
+                                            <label class="form-check-label">Desktop</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Configurações de Email -->
+                                <div id="emailConfig" class="mt-3 d-none">
+                                    <div class="card card-body bg-dark">
+                                        <h6>Configurações de Email</h6>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Intervalo de Atualização (ms)</label>
-                                                    <input type="number" class="form-control" name="updateInterval" min="5000">
+                                                    <label class="form-label">Email Para</label>
+                                                    <input type="email" class="form-control" name="notifications.emailConfig.to">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Lucro Mínimo (%)</label>
-                                                    <input type="number" class="form-control" name="minProfitPercentage" step="0.1">
+                                                    <label class="form-label">Email De</label>
+                                                    <input type="email" class="form-control" name="notifications.emailConfig.from">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Configurações de Apostas -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Configurações de Apostas</h6>
-                                    </div>
-                                    <div class="card-body">
+                                <!-- Configurações do Telegram -->
+                                <div id="telegramConfig" class="mt-3 d-none">
+                                    <div class="card card-body bg-dark">
+                                        <h6>Configurações do Telegram</h6>
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Valor Base (R$)</label>
-                                                    <input type="number" class="form-control" name="baseStake">
+                                                    <label class="form-label">Bot Token</label>
+                                                    <input type="text" class="form-control" name="notifications.telegramConfig.botToken">
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Máximo por Aposta (R$)</label>
-                                                    <input type="number" class="form-control" name="maxStakePerBet">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Máximo Total (R$)</label>
-                                                    <input type="number" class="form-control" name="maxTotalStake">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Tipos de Arbitragem -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Tipos de Arbitragem</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-check mb-2">
-                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.standard" id="standardArbitrage">
-                                                    <label class="form-check-label" for="standardArbitrage">
-                                                        Arbitragem Padrão
-                                                        <small class="d-block text-muted">Apostas pré-jogo com odds fixas</small>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-check mb-2">
-                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.live" id="liveArbitrage">
-                                                    <label class="form-check-label" for="liveArbitrage">
-                                                        Arbitragem ao Vivo
-                                                        <small class="d-block text-muted">Apostas durante o jogo</small>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-check mb-2">
-                                                    <input type="checkbox" class="form-check-input" name="arbitrageTypes.asian" id="asianArbitrage">
-                                                    <label class="form-check-label" for="asianArbitrage">
-                                                        Arbitragem Asiática
-                                                        <small class="d-block text-muted">Handicap asiático e linhas</small>
-                                                    </label>
+                                                    <label class="form-label">Chat ID</label>
+                                                    <input type="text" class="form-control" name="notifications.telegramConfig.chatId">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Casas de Apostas -->
-                            <div class="tab-pane fade" id="bookmakers">
-                                <div id="bookmakersContainer" class="row g-3">
+                        <!-- Limites de Odds -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Limites de Odds</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Odd Mínima</label>
+                                            <input type="number" class="form-control" name="oddsLimits.min" step="0.01" value="1.01">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Odd Máxima</label>
+                                            <input type="number" class="form-control" name="oddsLimits.max" step="0.01" value="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Casas de Apostas -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Casas de Apostas</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="bookmakersContainer">
                                     <!-- Preenchido dinamicamente -->
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Notificações -->
-                            <div class="tab-pane fade" id="notifications">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Notificações</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="notifications.email" id="emailNotification">
-                                                    <label class="form-check-label">Email</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="notifications.telegram" id="telegramNotification">
-                                                    <label class="form-check-label">Telegram</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="notifications.desktop">
-                                                    <label class="form-check-label">Desktop</label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Configurações de Email -->
-                                        <div id="emailConfig" class="d-none">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Email Para</label>
-                                                        <input type="email" class="form-control" name="notifications.emailConfig.to">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Email De</label>
-                                                        <input type="email" class="form-control" name="notifications.emailConfig.from">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Configurações do Telegram -->
-                                        <div id="telegramConfig" class="d-none">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Token do Bot</label>
-                                                        <input type="text" class="form-control" name="notifications.telegramConfig.botToken">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Chat ID</label>
-                                                        <input type="text" class="form-control" name="notifications.telegramConfig.chatId">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Configurações de Mercados -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0">Mercados</h6>
                             </div>
-
-                            <!-- Filtros -->
-                            <div class="tab-pane fade" id="filters">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Limites de Odds</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Odd Mínima</label>
-                                                    <input type="number" class="form-control" name="oddsLimits.min" step="0.1">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Odd Máxima</label>
-                                                    <input type="number" class="form-control" name="oddsLimits.max" step="0.1">
-                                                </div>
-                                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.h2h" id="market_h2h">
+                                            <label class="form-check-label" for="market_h2h">Resultado Final (1X2)</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.spreads" id="market_spreads">
+                                            <label class="form-check-label" for="market_spreads">Handicap</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.totals" id="market_totals">
+                                            <label class="form-check-label" for="market_totals">Over/Under</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.h2h_h1" id="market_h2h_h1">
+                                            <label class="form-check-label" for="market_h2h_h1">1º Tempo</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.h2h_q1" id="market_h2h_q1">
+                                            <label class="form-check-label" for="market_h2h_q1">1º Quarto</label>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Esportes -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Esportes</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="sports.soccer">
-                                                    <label class="form-check-label">Futebol</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="sports.basketball">
-                                                    <label class="form-check-label">Basquete</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="sports.tennis">
-                                                    <label class="form-check-label">Tênis</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="sports.volleyball">
-                                                    <label class="form-check-label">Vôlei</label>
-                                                </div>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.alternate_spreads" id="market_alternate_spreads">
+                                            <label class="form-check-label" for="market_alternate_spreads">Handicap Alternativo</label>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <!-- Ligas -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">Ligas/Competições</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_brazil_campeonato">
-                                                    <label class="form-check-label">Brasileirão Série A</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_brazil_serie_b">
-                                                    <label class="form-check-label">Brasileirão Série B</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_libertadores">
-                                                    <label class="form-check-label">Libertadores</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" name="leagues.soccer_copa_brasil">
-                                                    <label class="form-check-label">Copa do Brasil</label>
-                                                </div>
-                                            </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.alternate_totals" id="market_alternate_totals">
+                                            <label class="form-check-label" for="market_alternate_totals">Over/Under Alternativo</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.player_props" id="market_player_props">
+                                            <label class="form-check-label" for="market_player_props">Estatísticas de Jogador</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input type="checkbox" class="form-check-input" name="markets.outrights" id="market_outrights">
+                                            <label class="form-check-label" for="market_outrights">Campeão/Vencedor</label>
                                         </div>
                                     </div>
                                 </div>
@@ -423,34 +1209,31 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i>
-                        <span class="d-none d-sm-inline">Cancelar</span>
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="saveBotConfig()">
-                        <i class="fas fa-save"></i>
-                        <span class="d-none d-sm-inline">Salvar</span>
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="saveBotConfig()">Salvar</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal de detalhes removido pois os detalhes agora são mostrados diretamente no card -->
 
     <!-- Toast Container -->
     <div class="toast-container"></div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none">
-        <div class="d-flex justify-content-center align-items-center h-100 bg-white bg-opacity-75">
+        <div class="d-flex justify-content-center align-items-center h-100">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Carregando...</span>
             </div>
         </div>
     </div>
 
-    
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
     <script src="/js/dashboard.js"></script>
 </body>
 </html> 

@@ -80,7 +80,9 @@ function initDatabase() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        db.run(`DROP TABLE IF EXISTS user_configs`);
         db.run(`CREATE TABLE IF NOT EXISTS user_configs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             config_json TEXT NOT NULL,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -127,6 +129,94 @@ function initDatabase() {
             start_time DATETIME,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        // Inserir dados de exemplo para jogos
+        const sampleGames = [
+            {
+                game_id: 'game1',
+                home_team: 'Flamengo',
+                away_team: 'Palmeiras',
+                sport_key: 'soccer_brazil_campeonato',
+                bookmaker: 'bet365',
+                home_odds: 2.1,
+                away_odds: 3.2,
+                draw_odds: 3.5
+            },
+            {
+                game_id: 'game2',
+                home_team: 'São Paulo',
+                away_team: 'Corinthians',
+                sport_key: 'soccer_brazil_campeonato',
+                bookmaker: 'betfair',
+                home_odds: 2.4,
+                away_odds: 2.9,
+                draw_odds: 3.3
+            },
+            {
+                game_id: 'game3',
+                home_team: 'Cruzeiro',
+                away_team: 'Atlético-MG',
+                sport_key: 'soccer_brazil_serie_b',
+                bookmaker: 'bet365',
+                home_odds: 2.2,
+                away_odds: 3.1,
+                draw_odds: 3.4
+            },
+            {
+                game_id: 'game4',
+                home_team: 'Vasco',
+                away_team: 'Botafogo',
+                sport_key: 'soccer_brazil_serie_b',
+                bookmaker: 'betfair',
+                home_odds: 2.3,
+                away_odds: 3.0,
+                draw_odds: 3.2
+            }
+        ];
+
+        // Inserir jogos na tabela odds_history
+        const insertOdds = db.prepare(`
+            INSERT INTO odds_history (
+                game_id, home_team, away_team, bookmaker,
+                home_odds, away_odds, draw_odds, sport_key
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        sampleGames.forEach(game => {
+            insertOdds.run(
+                game.game_id,
+                game.home_team,
+                game.away_team,
+                game.bookmaker,
+                game.home_odds,
+                game.away_odds,
+                game.draw_odds,
+                game.sport_key
+            );
+        });
+
+        insertOdds.finalize();
+
+        // Inserir placares na tabela game_scores
+        const insertScores = db.prepare(`
+            INSERT OR REPLACE INTO game_scores (
+                game_id, home_team, away_team,
+                home_score, away_score, status, start_time
+            ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+        `);
+
+        sampleGames.forEach(game => {
+            insertScores.run(
+                game.game_id,
+                game.home_team,
+                game.away_team,
+                0,
+                0,
+                'scheduled'
+            );
+        });
+
+        insertScores.finalize();
 
         // Verificar se o usuário admin já existe
         db.get(`SELECT id, username, password FROM users WHERE username = ?`, ['admin'], (err, row) => {

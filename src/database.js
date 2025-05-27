@@ -18,6 +18,45 @@ const db = new sqlite3.Database(path.join(dataDir, 'odds.db'), (err) => {
 });
 
 function createTables() {
+    // Primeiro, vamos fazer backup dos dados existentes
+    db.serialize(() => {
+        // Criar tabela temporária para backup
+        db.run(`CREATE TABLE IF NOT EXISTS arbitrage_opportunities_backup AS SELECT * FROM arbitrage_opportunities`);
+        
+        // Dropar a tabela antiga
+        db.run(`DROP TABLE IF EXISTS arbitrage_opportunities`);
+        
+        // Criar a nova tabela com a coluna commence_time
+        db.run(`CREATE TABLE IF NOT EXISTS arbitrage_opportunities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_id TEXT,
+            home_team TEXT,
+            away_team TEXT,
+            home_odds REAL,
+            away_odds REAL,
+            draw_odds REAL,
+            home_bookmaker TEXT,
+            away_bookmaker TEXT,
+            draw_bookmaker TEXT,
+            profit_percentage REAL,
+            commence_time DATETIME,
+            sport_key TEXT DEFAULT 'soccer_brazil_campeonato',
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Restaurar dados do backup
+        db.run(`INSERT INTO arbitrage_opportunities (
+            id, game_id, home_team, away_team,
+            home_odds, away_odds, draw_odds,
+            home_bookmaker, away_bookmaker, draw_bookmaker,
+            profit_percentage, commence_time, sport_key, timestamp
+        ) SELECT * FROM arbitrage_opportunities_backup`);
+        
+        // Remover tabela de backup
+        db.run(`DROP TABLE IF EXISTS arbitrage_opportunities_backup`);
+    });
+
+    // Criar outras tabelas se não existirem
     db.run(`CREATE TABLE IF NOT EXISTS odds_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         game_id TEXT,
@@ -31,20 +70,17 @@ function createTables() {
         sport_key TEXT DEFAULT 'soccer_brazil_campeonato'
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS arbitrage_opportunities (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        game_id TEXT,
+    db.run(`CREATE TABLE IF NOT EXISTS games (
+        id TEXT PRIMARY KEY,
         home_team TEXT,
         away_team TEXT,
-        home_odds REAL,
-        away_odds REAL,
-        draw_odds REAL,
-        home_bookmaker TEXT,
-        away_bookmaker TEXT,
-        draw_bookmaker TEXT,
-        profit_percentage REAL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        sport_key TEXT DEFAULT 'soccer_brazil_campeonato'
+        sport_key TEXT DEFAULT 'soccer_brazil_campeonato',
+        league_key TEXT,
+        home_score INTEGER DEFAULT 0,
+        away_score INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'scheduled',
+        start_time DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS game_scores (
@@ -128,18 +164,20 @@ function saveArbitrageOpportunity(opportunity, sportKey = 'soccer_brazil_campeon
     const awayTeamOdds = opportunity.odds[opportunity.away_team] || { odds: 0, bookmaker: '' };
     const drawOdds = opportunity.odds.Draw || { odds: 0, bookmaker: '' };
 
+    // Formata a data para o formato ISO
+    const commence_time = new Date(opportunity.commence_time).toISOString();
+
     // Prepara a query
     const query = `
         INSERT INTO arbitrage_opportunities (
             game_id, home_team, away_team,
             home_odds, away_odds, draw_odds,
             home_bookmaker, away_bookmaker, draw_bookmaker,
-            profit_percentage, sport_key
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            profit_percentage, commence_time, sport_key
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    // Executa a query diretamente
-    db.run(query, [
+    const params = [
         opportunity.game_id,
         opportunity.home_team,
         opportunity.away_team,
@@ -150,23 +188,20 @@ function saveArbitrageOpportunity(opportunity, sportKey = 'soccer_brazil_campeon
         awayTeamOdds.bookmaker,
         drawOdds.bookmaker,
         parseFloat(opportunity.profit),
+        commence_time,
         sportKey
-    ], function(err) {
-        if (err) {
-            console.error('Erro ao salvar oportunidade:', err);
-            console.error('Dados:', {
-                game_id: opportunity.game_id,
-                home_team: opportunity.home_team,
-                away_team: opportunity.away_team,
-                home_odds: homeTeamOdds.odds,
-                away_odds: awayTeamOdds.odds,
-                draw_odds: drawOdds.odds,
-                home_bookmaker: homeTeamOdds.bookmaker,
-                away_bookmaker: awayTeamOdds.bookmaker,
-                draw_bookmaker: drawOdds.bookmaker,
-                profit: parseFloat(opportunity.profit)
-            });
-        }
+    ];
+
+    return new Promise((resolve, reject) => {
+        db.run(query, params, function(err) {
+            if (err) {
+                console.error('Erro ao salvar oportunidade:', err);
+                reject(err);
+            } else {
+                console.log('Oportunidade salva com sucesso!');
+                resolve(this.lastID);
+            }
+        });
     });
 }
 
@@ -199,7 +234,7 @@ function getTeamOddsHistory(team, limit = 50) {
     });
 }
 
-function getCurrentGames() {
+function getCurrentGames(sportKey = 'soccer_brazil_campeonato') {
     return new Promise((resolve, reject) => {
         db.all(`
             SELECT DISTINCT 
@@ -212,33 +247,140 @@ function getCurrentGames() {
                 gs.start_time
             FROM odds_history oh
             LEFT JOIN game_scores gs ON oh.game_id = gs.game_id
-            WHERE oh.sport_key = 'soccer_brazil_campeonato'
+            WHERE oh.sport_key = ?
             AND oh.timestamp >= datetime('now', '-1 day')
             ORDER BY oh.timestamp DESC
-        `, [], (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows.map(row => ({
-                ...row,
-                home_score: row.home_score || 0,
-                away_score: row.away_score || 0,
-                status: row.status || 'scheduled'
-            })));
+        `, [sportKey], (err, rows) => {
+            if (err) {
+                console.error('Erro ao buscar jogos:', err);
+                reject(err);
+            } else {
+                const games = rows.map(row => ({
+                    ...row,
+                    home_score: row.home_score || 0,
+                    away_score: row.away_score || 0,
+                    status: row.status || 'scheduled'
+                }));
+                console.log(`Jogos encontrados para ${sportKey}:`, games);
+                resolve(games);
+            }
         });
     });
 }
 
-function getArbitrageOpportunities(limit = 50, sportKey = 'soccer_brazil_campeonato') {
-    return new Promise((resolve, reject) => {
-        db.all(`
-            SELECT * FROM arbitrage_opportunities
-            WHERE sport_key = ?
-            ORDER BY timestamp DESC
-            LIMIT ?
-        `, [sportKey, limit], (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
+// Função para formatar o nome da liga
+function getFormattedLeagueName(league) {
+    const leagueMap = {
+        'soccer_brazil_campeonato': 'Campeonato Brasileiro Série A',
+        'soccer_brazil_serie_b': 'Campeonato Brasileiro Série B',
+        'soccer_libertadores': 'CONMEBOL Libertadores',
+        'soccer_copa_brasil': 'Copa do Brasil',
+        'soccer_brazil_carioca': 'Campeonato Carioca',
+        'soccer_brazil_paulista': 'Campeonato Paulista',
+        'soccer_brazil_gaucho': 'Campeonato Gaúcho',
+        'soccer_brazil_mineiro': 'Campeonato Mineiro'
+    };
+
+    return leagueMap[league] || league;
+}
+
+// Atualizar a função que busca oportunidades de arbitragem
+async function getArbitrageOpportunities(limit = 50, sportKey = 'soccer_brazil_campeonato') {
+    try {
+        console.log(`Buscando oportunidades de arbitragem para ${sportKey}, limite: ${limit}`);
+        const opportunities = await new Promise((resolve, reject) => {
+            const query = `
+                SELECT 
+                    id,
+                    game_id,
+                    home_team,
+                    away_team,
+                    home_odds,
+                    away_odds,
+                    draw_odds,
+                    home_bookmaker,
+                    away_bookmaker,
+                    draw_bookmaker,
+                    profit_percentage,
+                    commence_time,
+                    timestamp,
+                    sport_key
+                FROM arbitrage_opportunities
+                WHERE sport_key = ?
+                AND timestamp >= datetime('now', '-1 hour')
+                ORDER BY timestamp DESC
+                LIMIT ?
+            `;
+            console.log('Executando query:', query);
+            db.all(query, [sportKey, limit], (err, rows) => {
+                if (err) {
+                    console.error('Erro na query:', err);
+                    reject(err);
+                } else {
+                    console.log(`${rows.length} oportunidades encontradas no banco`);
+                    resolve(rows);
+                }
+            });
         });
-    });
+
+        // Adicionar o nome formatado da liga e formatar a data
+        const formattedOpportunities = opportunities.map(opp => ({
+            ...opp,
+            league_name: getFormattedLeagueName(opp.sport_key),
+            commence_time: opp.commence_time
+        }));
+
+        console.log('Oportunidades formatadas:', formattedOpportunities.length);
+        return formattedOpportunities;
+    } catch (error) {
+        console.error('Erro ao buscar oportunidades de arbitragem:', error);
+        throw error;
+    }
+}
+
+// Atualizar a função que busca oportunidades ao vivo
+async function getLiveArbitrageOpportunities(limit = 50) {
+    try {
+        const opportunities = await new Promise((resolve, reject) => {
+            db.all(`
+                SELECT 
+                    id,
+                    game_id,
+                    home_team,
+                    away_team,
+                    home_odds,
+                    away_odds,
+                    draw_odds,
+                    home_bookmaker,
+                    away_bookmaker,
+                    draw_bookmaker,
+                    profit_percentage,
+                    commence_time,
+                    timestamp,
+                    sport_key
+                FROM arbitrage_opportunities
+                WHERE game_id IN (
+                    SELECT game_id FROM game_scores
+                    WHERE status = 'in_progress'
+                )
+                ORDER BY timestamp DESC
+                LIMIT ?
+            `, [limit], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Adicionar o nome formatado da liga e formatar a data
+        return opportunities.map(opp => ({
+            ...opp,
+            league_name: getFormattedLeagueName(opp.sport_key),
+            commence_time: opp.commence_time
+        }));
+    } catch (error) {
+        console.error('Erro ao buscar oportunidades de arbitragem ao vivo:', error);
+        throw error;
+    }
 }
 
 function getTeamStats(team) {
@@ -369,142 +511,6 @@ function getGameScore(gameId) {
     });
 }
 
-function getLiveArbitrageOpportunities() {
-    return new Promise((resolve, reject) => {
-        db.all(`
-            WITH live_games AS (
-                SELECT 
-                    game_id,
-                    home_team,
-                    away_team,
-                    home_score,
-                    away_score
-                FROM game_scores
-                WHERE status = 'in_progress'
-                AND ((home_score = 2 AND away_score = 1) OR (home_score = 1 AND away_score = 2))
-            ),
-            current_odds AS (
-                SELECT 
-                    oh.game_id,
-                    oh.home_team,
-                    oh.away_team,
-                    oh.bookmaker,
-                    oh.home_odds,
-                    oh.away_odds,
-                    oh.draw_odds,
-                    oh.timestamp,
-                    ROW_NUMBER() OVER (PARTITION BY oh.game_id, oh.bookmaker ORDER BY oh.timestamp DESC) as rn
-                FROM odds_history oh
-                JOIN live_games lg ON oh.game_id = lg.game_id
-                WHERE oh.timestamp >= datetime('now', '-5 minutes')
-            )
-            SELECT 
-                co.*,
-                lg.home_score,
-                lg.away_score
-            FROM current_odds co
-            JOIN live_games lg ON co.game_id = lg.game_id
-            WHERE rn = 1
-            ORDER BY co.timestamp DESC
-        `, [], async (err, rows) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            try {
-                const opportunities = [];
-                const groupedByGame = {};
-
-                // Agrupar odds por jogo
-                rows.forEach(row => {
-                    if (!groupedByGame[row.game_id]) {
-                        groupedByGame[row.game_id] = {
-                            game_id: row.game_id,
-                            home_team: row.home_team,
-                            away_team: row.away_team,
-                            home_score: row.home_score,
-                            away_score: row.away_score,
-                            bookmakers: []
-                        };
-                    }
-                    groupedByGame[row.game_id].bookmakers.push({
-                        name: row.bookmaker,
-                        home_odds: row.home_odds,
-                        away_odds: row.away_odds,
-                        draw_odds: row.draw_odds
-                    });
-                });
-
-                // Analisar oportunidades para cada jogo
-                Object.values(groupedByGame).forEach(game => {
-                    const isHomeWinning = game.home_score > game.away_score;
-                    const bestOdds = {
-                        winning_team: { odds: 0, bookmaker: '' },
-                        losing_team: { odds: 0, bookmaker: '' },
-                        draw: { odds: 0, bookmaker: '' }
-                    };
-
-                    // Encontrar as melhores odds
-                    game.bookmakers.forEach(bm => {
-                        if (isHomeWinning) {
-                            if (bm.away_odds > bestOdds.losing_team.odds) {
-                                bestOdds.losing_team = { odds: bm.away_odds, bookmaker: bm.name };
-                            }
-                            if (bm.home_odds > bestOdds.winning_team.odds) {
-                                bestOdds.winning_team = { odds: bm.home_odds, bookmaker: bm.name };
-                            }
-                        } else {
-                            if (bm.home_odds > bestOdds.losing_team.odds) {
-                                bestOdds.losing_team = { odds: bm.home_odds, bookmaker: bm.name };
-                            }
-                            if (bm.away_odds > bestOdds.winning_team.odds) {
-                                bestOdds.winning_team = { odds: bm.away_odds, bookmaker: bm.name };
-                            }
-                        }
-                        if (bm.draw_odds > bestOdds.draw.odds) {
-                            bestOdds.draw = { odds: bm.draw_odds, bookmaker: bm.name };
-                        }
-                    });
-
-                    // Calcular arbitragem
-                    const winningStake = 100; // Aposta base de 100
-                    const losingStake = winningStake * (bestOdds.winning_team.odds / bestOdds.losing_team.odds);
-                    const drawStake = winningStake * (bestOdds.winning_team.odds / bestOdds.draw.odds);
-                    const totalStake = winningStake + losingStake + drawStake;
-                    const potentialReturn = winningStake * bestOdds.winning_team.odds;
-                    const profit = ((potentialReturn / totalStake) - 1) * 100;
-
-                    // Se houver oportunidade de lucro
-                    if (profit > 0) {
-                        opportunities.push({
-                            game_id: game.game_id,
-                            home_team: game.home_team,
-                            away_team: game.away_team,
-                            home_score: game.home_score,
-                            away_score: game.away_score,
-                            profit_percentage: profit,
-                            winning_team: isHomeWinning ? game.home_team : game.away_team,
-                            winning_odds: bestOdds.winning_team,
-                            losing_odds: bestOdds.losing_team,
-                            draw_odds: bestOdds.draw,
-                            suggested_stakes: {
-                                winning: Math.round(winningStake),
-                                losing: Math.round(losingStake),
-                                draw: Math.round(drawStake)
-                            }
-                        });
-                    }
-                });
-
-                resolve(opportunities);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    });
-}
-
 // Funções para gerenciar usuários
 function createUser(username, password) {
     const hashedPassword = require('crypto').createHash('sha256').update(password).digest('hex');
@@ -553,7 +559,7 @@ function validateUser(username, password) {
 // Configurações padrão do usuário
 const defaultConfig = {
     updateInterval: 5000,
-    minProfitPercentage: 1.0,
+    minProfitPercentage: 0.1,
     baseStake: 100,
     maxStakePerBet: 1000,
     maxTotalStake: 5000,
@@ -563,10 +569,15 @@ const defaultConfig = {
         asian: false
     },
     bookmakers: {
+        all: true,
         bet365: true,
         betfair: true,
         pinnacle: true,
-        williamhill: false
+        williamhill: true,
+        betway: true,
+        sportingbet: true,
+        rivalo: true,
+        netbet: true
     },
     notifications: {
         email: false,
@@ -586,16 +597,24 @@ const defaultConfig = {
         max: 10.0
     },
     sports: {
-        soccer: true,
-        basketball: false,
-        tennis: false,
-        volleyball: false
+        soccer: true
     },
     leagues: {
         soccer_brazil_campeonato: true,
-        soccer_brazil_serie_b: false,
-        soccer_libertadores: true,
-        soccer_copa_brasil: true
+        soccer_brazil_serie_b: true,
+        soccer_libertadores: false,
+        soccer_copa_brasil: false
+    },
+    markets: {
+        h2h: true,
+        spreads: true,
+        totals: true,
+        h2h_h1: true,
+        draw_no_bet: true,
+        double_chance: true,
+        both_teams_to_score: true,
+        half_time_full_time: true,
+        half_betting: true
     }
 };
 
@@ -672,7 +691,8 @@ function getUserConfig(userId) {
                                     },
                                     oddsLimits: { ...defaultConfig.oddsLimits, ...config.oddsLimits },
                                     sports: { ...defaultConfig.sports, ...config.sports },
-                                    leagues: { ...defaultConfig.leagues, ...config.leagues }
+                                    leagues: { ...defaultConfig.leagues, ...config.leagues },
+                                    markets: { ...defaultConfig.markets, ...config.markets }
                                 };
                                 console.log('Configuração processada:', fullConfig);
                                 resolve(fullConfig);
@@ -722,7 +742,8 @@ function saveUserConfig(userId, config) {
                     },
                     oddsLimits: { ...defaultConfig.oddsLimits, ...config.oddsLimits },
                     sports: { ...defaultConfig.sports, ...config.sports },
-                    leagues: { ...defaultConfig.leagues, ...config.leagues }
+                    leagues: { ...defaultConfig.leagues, ...config.leagues },
+                    markets: { ...defaultConfig.markets, ...config.markets }
                 };
 
                 // Converter para JSON

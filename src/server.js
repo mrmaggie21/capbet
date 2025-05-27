@@ -179,6 +179,22 @@ app.get('/api/team-stats/:team', requireAuth, async (req, res) => {
     }
 });
 
+// Função para formatar o nome da liga
+function getFormattedLeagueName(league) {
+    const leagueMap = {
+        'soccer_brazil_campeonato': 'Campeonato Brasileiro Série A',
+        'soccer_brazil_serie_b': 'Campeonato Brasileiro Série B',
+        'soccer_libertadores': 'CONMEBOL Libertadores',
+        'soccer_copa_brasil': 'Copa do Brasil',
+        'soccer_brazil_carioca': 'Campeonato Carioca',
+        'soccer_brazil_paulista': 'Campeonato Paulista',
+        'soccer_brazil_gaucho': 'Campeonato Gaúcho',
+        'soccer_brazil_mineiro': 'Campeonato Mineiro'
+    };
+
+    return leagueMap[league] || league;
+}
+
 // API para obter oportunidades de arbitragem
 app.get('/api/arbitrage', requireAuth, async (req, res) => {
     try {
@@ -189,37 +205,7 @@ app.get('/api/arbitrage', requireAuth, async (req, res) => {
         const opportunities = bot.getData().opportunities;
         const filteredOpportunities = opportunities.filter(opp => {
             // Log para cada oportunidade
-            console.log('\nAnalisando oportunidade:', {
-                times: `${opp.home_team} vs ${opp.away_team}`,
-                lucro: opp.profit_percentage,
-                casas: [opp.home_bookmaker, opp.away_bookmaker, opp.draw_bookmaker].filter(Boolean)
-            });
-
-            // Verificar lucro mínimo
-            if (opp.profit_percentage < userConfig.minProfitPercentage) {
-                console.log(`Filtrado por lucro mínimo: ${opp.profit_percentage}% < ${userConfig.minProfitPercentage}%`);
-                return false;
-            }
-
-            // Verificar se as casas de apostas estão habilitadas
-            const bookmakers = [opp.home_bookmaker, opp.away_bookmaker];
-            if (opp.draw_bookmaker) bookmakers.push(opp.draw_bookmaker);
-            
-            // Se "todas" estiver marcado, aceita qualquer casa
-            if (!userConfig.bookmakers.all) {
-                const allBookmakersEnabled = bookmakers.every(bm => {
-                    const bmKey = bm.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const isEnabled = userConfig.bookmakers[bmKey];
-                    if (!isEnabled) {
-                        console.log(`Casa de apostas desabilitada: ${bm}`);
-                    }
-                    return isEnabled;
-                });
-                
-                if (!allBookmakersEnabled) {
-                    return false;
-                }
-            }
+            console.log('Verificando oportunidade:', opp);
 
             // Verificar tipo de arbitragem
             if (opp.home_score !== undefined) { // É uma arbitragem ao vivo
@@ -250,22 +236,16 @@ app.get('/api/arbitrage', requireAuth, async (req, res) => {
                 return false;
             }
 
-            // Verificar esporte
-            if (!userConfig.sports.soccer) {
-                console.log('Filtrado: futebol desabilitado');
-                return false;
-            }
-
-            // Verificar liga específica
-            const league = opp.sport_key || 'soccer_brazil_campeonato';
-            if (!userConfig.leagues[league]) {
-                console.log(`Filtrado: liga desabilitada (${league})`);
-                return false;
-            }
-
+            // Todas as oportunidades são aceitas já que agora só trabalhamos com futebol
             console.log('Oportunidade aceita!');
             return true;
         });
+
+        // Formatar as oportunidades com o nome correto da liga
+        const formattedOpportunities = filteredOpportunities.map(opp => ({
+            ...opp,
+            league_name: getFormattedLeagueName(opp.sport_key || 'soccer_brazil_campeonato')
+        }));
 
         console.log(`\nResumo do filtro:
         - Total de oportunidades: ${opportunities.length}
@@ -278,7 +258,7 @@ app.get('/api/arbitrage', requireAuth, async (req, res) => {
           * Odds: min ${userConfig.oddsLimits.min} / max ${userConfig.oddsLimits.max}
         `);
 
-        res.json(filteredOpportunities);
+        res.json(formattedOpportunities);
     } catch (error) {
         console.error('Erro ao buscar oportunidades:', error);
         res.status(500).json({ error: error.message });
@@ -286,10 +266,21 @@ app.get('/api/arbitrage', requireAuth, async (req, res) => {
 });
 
 // API para obter oportunidades de arbitragem ao vivo
-app.get('/api/live-arbitrage', requireAuth, (req, res) => {
-    const data = bot.getData();
-    const liveOpportunities = data.opportunities.filter(opp => opp.home_score !== undefined);
-    res.json(liveOpportunities);
+app.get('/api/live-arbitrage', requireAuth, async (req, res) => {
+    try {
+        const opportunities = await getLiveArbitrageOpportunities();
+        
+        // Formatar as oportunidades com o nome correto da liga
+        const formattedOpportunities = opportunities.map(opp => ({
+            ...opp,
+            league_name: getFormattedLeagueName(opp.sport_key || 'soccer_brazil_campeonato')
+        }));
+
+        res.json(formattedOpportunities);
+    } catch (error) {
+        console.error('Erro ao buscar oportunidades de arbitragem ao vivo:', error);
+        res.status(500).json({ error: 'Erro ao buscar oportunidades de arbitragem ao vivo' });
+    }
 });
 
 // API para obter placar do jogo
@@ -466,6 +457,22 @@ app.get('/api/bookmakers', requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Erro ao buscar bookmakers:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// API para obter jogos por liga
+app.get('/api/games', requireAuth, async (req, res) => {
+    try {
+        const { league } = req.query;
+        const sportKey = league === 'serie_a' ? 'soccer_brazil_campeonato' : 'soccer_brazil_serie_b';
+        
+        const games = await getCurrentGames(sportKey);
+        console.log(`Jogos encontrados para ${league}:`, games);
+        
+        res.json(games);
+    } catch (error) {
+        console.error('Erro ao buscar jogos:', error);
+        res.status(500).json({ error: 'Erro ao buscar jogos' });
     }
 });
 

@@ -60,12 +60,13 @@ function calculateArbitrage(odds) {
                     home_team: game.home_team,
                     away_team: game.away_team,
                     odds: bookmakerOdds,
-                    profit: profit.toFixed(2)
+                    profit: profit.toFixed(2),
+                    commence_time: game.commence_time
                 };
                 
                 arbitrageOpportunities.push(opportunity);
                 saveArbitrageOpportunity(opportunity);
-                console.log(`Oportunidade de arbitragem encontrada: ${game.home_team} vs ${game.away_team} - Lucro: ${profit.toFixed(2)}%`);
+                console.log(`Oportunidade de arbitragem encontrada: ${game.home_team} vs ${game.away_team} - Lucro: ${profit.toFixed(2)}% - Data: ${new Date(game.commence_time).toLocaleString()}`);
             }
         }
 
@@ -130,7 +131,14 @@ async function sendArbitrageUpdates() {
             opportunities.forEach(opp => {
                 const message = `🎯 Oportunidade de Arbitragem Encontrada!\n\n` +
                     `🏆 Jogo: ${opp.home_team} vs ${opp.away_team}\n` +
-                    `⏰ Início: ${new Date(opp.commence_time).toLocaleString()}\n` +
+                    `⏰ Data: ${new Date(opp.commence_time).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'America/Sao_Paulo'
+                    })}\n` +
                     `💰 Lucro Potencial: ${opp.profit}%\n\n` +
                     `📊 Melhores Odds:\n` +
                     Object.entries(opp.odds).map(([team, data]) => 

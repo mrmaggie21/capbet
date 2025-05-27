@@ -75,14 +75,25 @@ class ArbitrageBot {
             console.log('Atualizando dados do bot...');
 
             // Buscar dados em paralelo
+            console.log('Buscando oportunidades de arbitragem...');
             const [arbitrageData, liveArbitrageData, gamesData] = await Promise.all([
-                getArbitrageOpportunities(),
-                getLiveArbitrageOpportunities(),
-                getCurrentGames()
+                getArbitrageOpportunities().then(data => {
+                    console.log('Oportunidades de arbitragem encontradas:', data.length);
+                    return data;
+                }),
+                getLiveArbitrageOpportunities().then(data => {
+                    console.log('Oportunidades de arbitragem ao vivo encontradas:', data.length);
+                    return data;
+                }),
+                getCurrentGames().then(data => {
+                    console.log('Jogos atuais encontrados:', data.length);
+                    return data;
+                })
             ]);
 
             // Atualizar dados
             const newOpportunities = [...arbitrageData, ...liveArbitrageData];
+            console.log('Total de oportunidades combinadas:', newOpportunities.length);
             this.opportunities = newOpportunities;
             this.games = gamesData;
 
@@ -98,6 +109,7 @@ class ArbitrageBot {
             console.log(`Atualização concluída:
             - Oportunidades: ${newOpportunities.length}
             - Jogos: ${gamesData.length}
+            - Timestamp: ${new Date().toISOString()}
             `);
         } catch (error) {
             console.error('Erro ao atualizar dados:', error);
